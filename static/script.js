@@ -50,7 +50,10 @@ const elements = {
     floatingShareBar: document.getElementById('floating-share-bar'),
     selectedCountText: document.getElementById('selected-count-text'),
     clearSelectionBtn: document.getElementById('clear-selection-btn'),
-    tweetSelectedBtn: document.getElementById('tweet-selected-btn')
+    tweetSelectedBtn: document.getElementById('tweet-selected-btn'),
+
+    // Export CSV Button
+    exportCsvBtn: document.getElementById('export-csv-btn')
 };
 
 // Initialize Application
@@ -125,6 +128,9 @@ function setupEventListeners() {
     // Floating bar actions
     elements.clearSelectionBtn.addEventListener('click', clearSelection);
     elements.tweetSelectedBtn.addEventListener('click', tweetSelectedNotes);
+
+    // Export CSV action
+    elements.exportCsvBtn.addEventListener('click', exportToCSV);
 }
 
 // Show/Hide search clear button
@@ -346,12 +352,21 @@ function renderTimeline() {
                     </div>
                     <div class="note-header">
                         <span class="type-badge type-${note.type}">${note.type}</span>
-                        <button class="share-x-btn" onclick="shareOnTwitter(this, '${entry.date}', '${note.type}', '${entry.link}')" title="Share this update on X (Twitter)">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                            </svg>
-                            <span>Share</span>
-                        </button>
+                        <div class="note-header-actions">
+                            <button class="copy-btn" onclick="copyToClipboard(this)" title="Copy note text to clipboard">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                            <button class="share-x-btn" onclick="shareOnTwitter(this, '${entry.date}', '${note.type}', '${entry.link}')" title="Share this update on X (Twitter)">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                                <span>Share</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="note-body">
                         ${note.html}
@@ -561,5 +576,88 @@ function tweetSelectedNotes() {
     // Clear selection
     clearSelection();
     showToast('Sent selection to Twitter!', 'success');
-}
+};
 
+// Copy single release note text to clipboard
+window.copyToClipboard = function(buttonEl) {
+    const noteItem = buttonEl.closest('.note-item');
+    const noteBody = noteItem.querySelector('.note-body');
+    
+    // Strip HTML tags and collapse whitespace
+    const text = noteBody.innerHTML
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+        
+    navigator.clipboard.writeText(text).then(() => {
+        const originalHTML = buttonEl.innerHTML;
+        buttonEl.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 12px; height: 12px; color: var(--color-feature);">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span style="color: var(--color-feature); font-weight: 600;">Copied!</span>
+        `;
+        buttonEl.style.borderColor = 'var(--color-feature)';
+        buttonEl.disabled = true;
+        
+        showToast('Copied note to clipboard!', 'success');
+        
+        setTimeout(() => {
+            buttonEl.innerHTML = originalHTML;
+            buttonEl.style.borderColor = '';
+            buttonEl.disabled = false;
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+        showToast('Failed to copy to clipboard', 'error');
+    });
+};
+
+// Export currently filtered/sorted timeline view to CSV
+function exportToCSV() {
+    if (state.filteredEntries.length === 0) {
+        showToast('No updates to export in the current view', 'info');
+        return;
+    }
+    
+    const headers = ['Date', 'Category', 'Content', 'Link'];
+    const rows = [headers];
+    
+    state.filteredEntries.forEach(entry => {
+        entry.notes.forEach(note => {
+            const cleanText = note.html
+                .replace(/<[^>]*>/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+                
+            // Escape double quotes for CSV
+            const escapedText = cleanText.replace(/"/g, '""');
+            const escapedDate = entry.date.replace(/"/g, '""');
+            const escapedType = note.type.replace(/"/g, '""');
+            const escapedLink = entry.link.replace(/"/g, '""');
+            
+            rows.push([
+                `"${escapDate}"`,
+                `"${escapType}"`,
+                `"${escapText}"`,
+                `"${escapLink}"`
+            ]);
+        });
+    });
+    
+    const csvContent = rows.map(e => e.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    const timestamp = new Date().toISOString().slice(0, 10);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `bigquery_release_notes_${timestamp}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast('CSV export downloaded!', 'success');
+}

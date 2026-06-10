@@ -734,6 +734,51 @@ body {
     border-color: var(--color-general-border);
 }
 
+.note-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+/* Copy Button */
+.copy-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.copy-btn svg {
+    width: 12px;
+    height: 12px;
+    transition: var(--transition-smooth);
+}
+
+.copy-btn:hover {
+    background: var(--text-primary);
+    color: var(--bg-dark);
+    border-color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+.copy-btn:hover svg {
+    transform: scale(1.1);
+}
+
+.copy-btn:active {
+    transform: translateY(0);
+}
+
 /* Share on X Button */
 .share-x-btn {
     background: rgba(255, 255, 255, 0.04);
@@ -748,7 +793,6 @@ body {
     gap: 0.4rem;
     cursor: pointer;
     transition: var(--transition-smooth);
-    margin-left: auto;
 }
 
 .share-x-btn svg {
