@@ -1,88 +1,80 @@
 # BigQuery Release Notes Tracker
 
-A premium, high-fidelity web application built with Python Flask (backend) and vanilla HTML, JavaScript, and CSS (frontend) that fetches, parses, caches, and visualizes the official BigQuery Release Notes feed.
+Una aplicación web moderna y de alta fidelidad construida con Python Flask (backend) y HTML, JavaScript y CSS vanilla (frontend) que descarga, analiza, almacena en caché y visualiza el feed oficial de notas de lanzamiento de BigQuery.
 
-## 🚀 Key Features
+## 🚀 Características Principales
 
-- **Dynamic Feed Fetching & Parsing:** Automatically retrieves the official Atom XML feed, extracts the metadata, and parses raw HTML structures to isolate and group changes by date and category.
-- **Granular Categories:** Splitting of individual day entries into separate, color-coded updates:
-  - **Feature** (Green badge)
-  - **Deprecation** (Red badge)
-  - **Changed** (Orange badge)
-  - **Notice** (Blue badge)
-  - **General** (Purple badge)
-- **Interactive Control Center:**
-  - **Instant Search:** Dynamic client-side searching across dates, category types, and release note content.
-  - **Category Tabs:** Fast switching between different types of updates (e.g., viewing only *Features* or *Deprecations*).
-  - **Sort Order Toggle:** Swap between Newest First and Oldest First instantly.
-- **Analytics Dashboard:** Metrics summary cards displaying the total number of release days and counts for features, deprecations, and other updates.
-- **Refresh Button with Spinner:** On-demand data updates from the Google feed via a `/api/notes?refresh=true` AJAX call, showing a spinning loader and success/error toasts.
-- **Share on X (Twitter):**
-  - **Individual Updates:** Click the "Share" button on any release update card to compose a tweet specifically for that card.
-  - **Multi-Select & Tweet:** Select multiple updates by clicking on cards. A floating bar appears at the bottom allowing you to tweet a compiled list of all selected updates, dynamically formatted and shortened to fit within Twitter's 280-character limit.
-- **Premium Glassmorphic Design:** Glowing gradients, blurred backdrops (`backdrop-filter`), smooth hover transitions, and sticky layout components (such as the sticky date headers that track with you as you read that day's notes).
+- **Consumo y Parseo de Feeds Dinámico:** Recupera automáticamente el feed Atom XML oficial, extrae metadatos y divide las estructuras HTML crudas para agrupar los cambios por fecha y categoría.
+- **Categorización Granular:** Separación de las entradas diarias en actualizaciones individuales con etiquetas de colores:
+  - **Feature** (Verde)
+  - **Deprecation** (Rojo/Rosa)
+  - **Changed** (Naranja/Ámbar)
+  - **Notice** (Azul)
+  - **General** (Morado)
+- **Centro de Control Interactivo:**
+  - **Búsqueda Instantánea:** Búsqueda en tiempo real desde el navegador por palabras clave dentro del contenido de las notas y las fechas.
+  - **Filtros por Categoría:** Alterna rápidamente entre diferentes tipos de actualizaciones (por ejemplo, ver solo *Features* o *Deprecations*).
+  - **Ordenamiento Temporal:** Cambia entre mostrar las notas más recientes primero (Newest First) o las más antiguas primero (Oldest First) instáneamente.
+- **Dashboard de Estadísticas:** Tarjetas métricas superiores que muestran el número total de fechas de actualización, así como conteos detallados de características, depreciaciones y otros cambios en el feed.
+- **Botón de Actualización con Spinner:** Sincronización en vivo con el feed de Google mediante una petición AJAX a `/api/notes?refresh=true` con indicadores de carga visual y alertas toast de éxito o error.
+- **Compartición en X (Twitter):**
+  - **Individual:** Comparte cualquier actualización específica haciendo clic en su botón de compartir individual.
+  - **Selección Múltiple:** Haz clic en varias tarjetas de notas para seleccionarlas (se iluminarán y activarán su casilla de verificación). Una barra flotante se deslizará desde la parte inferior permitiéndote tuitear un resumen formateado de todas las notas seleccionadas, acortando fechas y texto automáticamente para ajustarse al límite estricto de 280 caracteres de Twitter.
+- **Diseño Premium Glassmorphic:** Fondos degradados oscuros con orbes decorativos difuminados (`backdrop-filter`), transiciones animadas fluidas y fechas pegajosas (`sticky`) que se mantienen visibles en el lateral de la pantalla mientras navegas por los cambios del día.
 
 ---
 
-## 📂 Project Architecture
+## 📂 Arquitectura del Proyecto
 
-The application has a clean, standard Flask project layout:
+El proyecto sigue una estructura limpia y estándar de Flask:
 
 ```text
 prueba_agy/
-├── .venv/                 # Python virtual environment (contains Flask, requests, bs4)
-├── .gitignore             # Git exclusion rules
-├── app.py                 # Flask server (feed fetching, XML/HTML parsing, cache, and API routes)
-├── README.md              # Project documentation (this file)
+├── .venv/                 # Entorno virtual de Python (contiene Flask, requests, bs4)
+├── .gitignore             # Reglas de exclusión para Git
+├── app.py                 # Servidor Flask (API, descarga de XML, parseo de HTML y caché)
+├── README.md              # Documentación del proyecto (este archivo)
 ├── templates/
-│   └── index.html         # Main dashboard layout
+│   └── index.html         # Diseño y maquetación principal
 └── static/
-    ├── style.css          # Design system, glassmorphism panels, colors, and responsive layouts
-    └── script.js          # App state, API calls, instant search/filter engine, and animations
+    ├── style.css          # Hojas de estilo (diseño oscuro, paneles glass, responsividad y animaciones)
+    └── script.js          # Lógica del cliente (AJAX, motor de búsqueda/filtrado y compartición)
 ```
 
 ---
 
-## 💻 Technical Details
+## 💻 Detalles Técnicos
 
-### Backend Code
-The Flask backend uses Python's standard `xml.etree.ElementTree` to navigate the namespaced Atom XML elements safely, and uses `BeautifulSoup` (`html.parser`) to parse the HTML inside `<content>`. It groups text blocks by splitting on `<h3>` tags to extract individual updates with their respective category headings. An in-memory cache is used to ensure instant page loads, and it exposes two main routes:
-1. `GET /`: Renders the frontend interface.
-2. `GET /api/notes`: Returns cached release notes in JSON format. Accepting `?refresh=true` forces a live fetch and updates the cache.
+### Backend
+El backend de Flask utiliza `xml.etree.ElementTree` estándar para leer el feed XML Atom con namespaces, y `BeautifulSoup` (`html.parser`) para procesar el HTML embebido. Almacena los registros estructurados en un diccionario global en memoria (`cache`) para garantizar accesos veloces, y expone dos rutas:
+1. `GET /`: Sirve la interfaz web.
+2. `GET /api/notes`: Devuelve el JSON parseado. Permite `?refresh=true` para forzar descargas en vivo de los servidores de Google.
 
-### Frontend Interface
-The markup uses HTML5 semantic tags (`<header>`, `<main>`, `<section>`, `<footer>`), integrates Google Fonts (Inter & Outfit), and defines placeholders for the metrics, controls, loading spinner, error states, and the main release timeline.
-
-### Stylesheets
-A bespoke dark-mode CSS stylesheet featuring:
-- Soft glowing background orbs with high Gaussian blur values to add depth.
-- Glass panels with `backdrop-filter: blur(16px)` and translucent borders.
-- Sticky dates that remain visible at the side of their timeline entries when scrolling.
-- Media queries mapping out responsive layouts for tablet and mobile devices.
-
-### Frontend Engine
-A vanilla JavaScript engine managing state React-style (without framework overhead). It tracks state parameters like search strings, active categories, sorting direction, and handles DOM updates, loading/error animations, and toast notifications.
+### Frontend
+- **HTML:** Estructurado con etiquetas semánticas de HTML5 e iconos SVG limpios. Integra fuentes estilizadas de Google Fonts (Inter y Outfit).
+- **CSS:** Una hoja de estilos detallada con temática oscura, orbes dinámicos de fondo y diseño adaptativo mediante Media Queries para una visualización excelente en computadoras, tabletas y celulares.
+- **JavaScript:** Un motor de control de estado en JS Vanilla que administra las selecciones, filtros, re-ordenamientos de la línea de tiempo y llamadas a la API de forma reactiva y rápida.
 
 ---
 
-## ⚙️ Running the Application
+## ⚙️ Ejecución de la Aplicación
 
-If you ever need to start or restart the server locally, run the following command lines:
+Si necesitas levantar o reiniciar el servidor de manera local:
 
-1. **Activate the Virtual Environment:**
+1. **Activa el Entorno Virtual:**
    ```powershell
    .venv\Scripts\activate
    ```
-2. **Run the Server:**
+2. **Ejecuta el Servidor Flask:**
    ```powershell
    python app.py
    ```
-3. **Open in Browser:**
-   Go to [http://127.0.0.1:5000](http://127.0.0.1:5000).
+3. **Abre el Navegador:**
+   Ingresa a [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
 ---
 
-## 🌐 GitHub Repository
+## 🌐 Repositorio en GitHub
 
-The project is hosted on GitHub:
+El proyecto está disponible en:
 🔗 [YamilVLR1104/agy-apps-event-talks-app](https://github.com/YamilVLR1104/agy-apps-event-talks-app)
