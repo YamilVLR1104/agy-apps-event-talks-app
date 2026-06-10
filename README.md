@@ -20,6 +20,8 @@ Una aplicación web moderna y de alta fidelidad construida con Python Flask (bac
 - **Compartición en X (Twitter):**
   - **Individual:** Comparte cualquier actualización específica haciendo clic en su botón de compartir individual.
   - **Selección Múltiple:** Haz clic en varias tarjetas de notas para seleccionarlas (se iluminarán y activarán su casilla de verificación). Una barra flotante se deslizará desde la parte inferior permitiéndote tuitear un resumen formateado de todas las notas seleccionadas, acortando fechas y texto automáticamente para ajustarse al límite estricto de 280 caracteres de Twitter.
+- **Copiar al Portapapeles:** Botón individual en cada tarjeta que extrae el contenido de la nota limpio de etiquetas HTML y la copia al portapapeles con animación de éxito.
+- **Exportar a CSV:** Botón en el centro de control que genera y descarga un archivo CSV con las notas de lanzamiento visibles actualmente, respetando tus búsquedas y filtros activos.
 - **Diseño Premium Glassmorphic:** Fondos degradados oscuros con orbes decorativos difuminados (`backdrop-filter`), transiciones animadas fluidas y fechas pegajosas (`sticky`) que se mantienen visibles en el lateral de la pantalla mientras navegas por los cambios del día.
 
 ---
