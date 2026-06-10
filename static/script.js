@@ -53,11 +53,18 @@ const elements = {
     tweetSelectedBtn: document.getElementById('tweet-selected-btn'),
 
     // Export CSV Button
-    exportCsvBtn: document.getElementById('export-csv-btn')
+    exportCsvBtn: document.getElementById('export-csv-btn'),
+
+    // Theme Toggle elements
+    themeToggleBtn: document.getElementById('theme-toggle'),
+    themeIconDark: document.getElementById('theme-icon-dark'),
+    themeIconLight: document.getElementById('theme-icon-light'),
+    themeToggleText: document.getElementById('theme-toggle-text')
 };
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     loadReleaseNotes();
     setupEventListeners();
 });
@@ -131,6 +138,9 @@ function setupEventListeners() {
 
     // Export CSV action
     elements.exportCsvBtn.addEventListener('click', exportToCSV);
+
+    // Theme Toggle action
+    elements.themeToggleBtn.addEventListener('click', toggleTheme);
 }
 
 // Show/Hide search clear button
@@ -660,4 +670,36 @@ function exportToCSV() {
     document.body.removeChild(link);
     
     showToast('CSV export downloaded!', 'success');
+}
+
+// Initialize Theme
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeUI(savedTheme);
+}
+
+// Toggle Theme between Dark and Light
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeUI(newTheme);
+    
+    showToast(`Switched to ${newTheme === 'light' ? 'Light' : 'Dark'} Mode!`, 'info');
+}
+
+// Update Theme UI Icons and Labels
+function updateThemeUI(theme) {
+    if (theme === 'light') {
+        elements.themeIconDark.style.display = 'none';
+        elements.themeIconLight.style.display = 'inline-block';
+        elements.themeToggleText.textContent = 'Dark Mode';
+    } else {
+        elements.themeIconDark.style.display = 'inline-block';
+        elements.themeIconLight.style.display = 'none';
+        elements.themeToggleText.textContent = 'Light Mode';
+    }
 }
